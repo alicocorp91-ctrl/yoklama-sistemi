@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üniversite Yoklama Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .camera-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            display: none;
+            margin-bottom: 10px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        #preview {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        
+        .permission-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .permission-box h3 {
+            color: #856404;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .permission-box p {
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        .kvkk-box {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .kvkk-box h3 {
+            color: #1976D2;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .kvkk-box p {
+            color: #0d47a1;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .location-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Üniversite Yoklama Sistemi</h1>
+            <p>Derse katılımınızı kaydetmek için formu doldurun</p>
+        </div>
+
+        <div class="kvkk-box">
+            <h3>🔒 Kişisel Verilerin Korunması (KVKK)</h3>
+            <p>Bu uygulama kapsamında toplanan tüm verileriniz (ad, soyad, öğrenci numarası, konum bilgisi ve fotoğraf) 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında işlenmektedir. Verileriniz yalnızca devam kontrolü amacıyla kullanılacak, üçüncü kişilerle paylaşılmayacak ve güvenli bir şekilde saklanacaktır. Haklarınız hakkında bilgi için üniversite KVKK birimine başvurabilirsiniz.</p>
+        </div>
+
+        <div class="permission-box" id="permissionBox">
+            <h3>⚠️ İzin Gerekli</h3>
+            <p>Yoklama kaydı için konum ve kamera erişimine izin vermeniz gerekmektedir. Lütfen tarayıcınızdan izin verin.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="ad">Ad:</label>
+            <input type="text" id="ad" placeholder="Adınızı girin" required>
+        </div>
+
+        <div class="form-group">
+            <label for="soyad">Soyad:</label>
+            <input type="text" id="soyad" placeholder="Soyadınızı girin" required>
+        </div>
+
+        <div class="form-group">
+            <label for="ogrenciNo">Öğrenci Numarası:</label>
+            <input type="text" id="ogrenciNo" placeholder="Öğrenci numaranızı girin" required>
+        </div>
+
+        <div class="camera-container">
+            <button class="btn btn-primary" id="startCamera">📷 Kamerayı Aç ve Tahta Fotoğrafı Çek</button>
+            <video id="video" autoplay playsinline></video>
+            <button class="btn btn-secondary" id="captureBtn" style="display:none;">📸 Fotoğraf Çek</button>
+            <canvas id="canvas"></canvas>
+            <img id="preview" alt="Çekilen Fotoğraf">
+        </div>
+
+        <button class="btn btn-primary" id="submitBtn">✅ Yoklama Gönder</button>
+
+        <div class="status" id="statusBox"></div>
+        <div class="location-info" id="locationInfo"></div>
+    </div>
+
+    <script>
+        // OKUL KOORDİNATLARI
+        const OKUL_LAT = 37.17332229757835;
+        const OKUL_LNG = 33.25556434722105;
+        const MAX_MESAFE = 100; // metre
+
+        let stream = null;
+        let fotoCekildi = false;
+        let konumAlindi = false;
+        let kullaniciKonum = null;
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const preview = document.getElementById('preview');
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('captureBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusBox = document.getElementById('statusBox');
+        const permissionBox = document.getElementById('permissionBox');
+        const locationInfo = document.getElementById('locationInfo');
+
+        // Mesafe hesaplama fonksiyonu (Haversine formülü)
+        function mesafeHesapla(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Dünya yarıçapı metre cinsinden
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // metre cinsinden mesafe
+        }
+
+        // Durum mesajı göster
+        function durumGoster(mesaj, tip) {
+            statusBox.textContent = mesaj;
+            statusBox.className = 'status ' + tip;
+            statusBox.style.display = 'block';
+        }
+
+        // Konum al
+        function konumAl() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject('Tarayıcınız konum servisi desteklemiyor!');
+                    return;
+                }
+
+                durumGoster('📍 Konumunuz alınıyor...', 'info');
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        kullaniciKonum = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        const mesafe = mesafeHesapla(
+                            OKUL_LAT, OKUL_LNG,
+                            kullaniciKonum.lat, kullaniciKonum.lng
+                        );
+
+                        locationInfo.innerHTML = `
+                            📍 Konumunuz: ${kullaniciKonum.lat.toFixed(6)}, ${kullaniciKonum.lng.toFixed(6)}<br>
+                            📏 Okula uzaklık: ${Math.round(mesafe)} metre
+                        `;
+                        locationInfo.style.display = 'block';
+
+                        if (mesafe <= MAX_MESAFE) {
+                            konumAlindi = true;
+                            durumGoster(`✅ Konum doğrulandı! (${Math.round(mesafe)} metre)`, 'success');
+                            resolve(true);
+                        } else {
+                            durumGoster(`❌ Konumunuz okula çok uzak! (${Math.round(mesafe)} metre). En fazla ${MAX_MESAFE} metre uzakta olmalısınız.`, 'error');
+                            reject('Konum çok uzak');
+                        }
+                    },
+                    (error) => {
+                        let hata = 'Konum alınamadı!';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                hata = '❌ Konum izni reddedildi! Lütfen tarayıcı ayarlarından konum iznini açın.';
+                                permissionBox.style.display = 'block';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                hata = '❌ Konum bilgisi kullanılamıyor!';
+                                break;
+                            case error.TIMEOUT:
+                                hata = '❌ Konum alma zaman aşımına uğradı!';
+                                break;
+                        }
+                        durumGoster(hata, 'error');
+                        reject(hata);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
+        // Kamera başlat
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                // Önce konumu kontrol et
+                if (!konumAlindi) {
+                    await konumAl();
+                }
+
+                // Kamera iznini iste
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment', // Arka kamera
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                });
+
+                video.srcObject = stream;
+                video.style.display = 'block';
+                captureBtn.style.display = 'block';
+                startCameraBtn.style.display = 'none';
+                preview.style.display = 'none';
+                permissionBox.style.display = 'none';
+                durumGoster('📸 Tahtanın fotoğrafını çekin', 'info');
+
+            } catch (error) {
+                console.error('Kamera hatası:', error);
+                durumGoster('❌ Kamera erişimi reddedildi! Lütfen tarayıcı ayarlarından kamera iznini açın.', 'error');
+                permissionBox.style.display = 'block';
+            }
+        });
+
+        // Fotoğraf çek
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            preview.src = canvas.toDataURL('image/jpeg');
+            preview.style.display = 'block';
+            
+            video.style.display = 'none';
+            captureBtn.style.display = 'none';
+            startCameraBtn.textContent = '🔄 Yeniden Fotoğraf Çek';
+            startCameraBtn.style.display = 'block';
+            
+            // Kamerayı kapat
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            fotoCekildi = true;
+            durumGoster('✅ Fotoğraf başarıyla çekildi!', 'success');
+        });
+
+        // Form gönder
+        submitBtn.addEventListener('click', async () => {
+            const ad = document.getElementById('ad').value.trim();
+            const soyad = document.getElementById('soyad').value.trim();
+            const ogrenciNo = document.getElementById('ogrenciNo').value.trim();
+
+            // Kontroller
+            if (!ad || !soyad || !ogrenciNo) {
+                durumGoster('❌ Lütfen tüm alanları doldurun!', 'error');
+                return;
+            }
+
+            if (!konumAlindi) {
+                durumGoster('❌ Lütfen önce konumunuzu doğrulayın!', 'error');
+                await konumAl().catch(() => {});
+                return;
+            }
+
+            if (!fotoCekildi) {
+                durumGoster('❌ Lütfen tahta fotoğrafı çekin!', 'error');
+                return;
+            }
+
+            // Başarılı yoklama
+            durumGoster(`🎉 YOKLAMA BAŞARILI!\n\n👤 ${ad} ${soyad}\n🎓 No: ${ogrenciNo}\n📍 Konum: Onaylandı\n📸 Fotoğraf: Kaydedildi\n\n✅ Katılımınız kaydedildi!`, 'success');
+
+            // Konsola bilgileri yazdır (gerçek uygulamada sunucuya gönderilir)
+            console.log('YOKLAMA BİLGİLERİ:', {
+                ad: ad,
+                soyad: soyad,
+                ogrenciNo: ogrenciNo,
+                konum: kullaniciKonum,
+                foto: preview.src.substring(0, 50) + '...',
+                zaman: new Date().toLocaleString('tr-TR')
+            });
+
+            // Formu temizle
+            setTimeout(() => {
+                document.getElementById('ad').value = '';
+                document.getElementById('soyad').value = '';
+                document.getElementById('ogrenciNo').value = '';
+                preview.style.display = 'none';
+                startCameraBtn.textContent = '📷 Kamerayı Aç ve Tahta Fotoğrafı Çek';
+                fotoCekildi = false;
+                locationInfo.style.display = 'none';
+            }, 3000);
+        });
+
+        // Sayfa yüklendiğinde konum iste
+        window.addEventListener('load', () => {
+            durumGoster('🚀 Hoş geldiniz! Lütfen konum ve kamera izinlerini verin.', 'info');
+            // Otomatik konum kontrolü
+            setTimeout(() => {
+                konumAl().catch(() => {
+                    permissionBox.style.display = 'block';
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
