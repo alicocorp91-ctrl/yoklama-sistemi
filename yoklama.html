@@ -258,7 +258,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -272,6 +272,13 @@
             border-radius: 20px;
             text-align: center;
             max-width: 400px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
         .loading-content h2 {
@@ -320,18 +327,82 @@
             font-size: 14px;
             line-height: 1.6;
         }
+
+        .permission-request-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .permission-request-box h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .permission-request-box p {
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .permission-request-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #ff6b6b;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: pulse-btn 1.5s infinite;
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        }
+
+        .manual-permission-box {
+            background: #fff3cd;
+            border: 3px dashed #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .manual-permission-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .manual-permission-box ol {
+            color: #856404;
+            margin-left: 20px;
+            line-height: 1.8;
+        }
     </style>
 </head>
 <body>
     <!-- Yükleme Ekranı -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
-            <h2>🔐 İzinler Kontrol Ediliyor</h2>
+            <h2>🔐 Yoklama Sistemi</h2>
             <div class="spinner"></div>
-            <p><strong>Yoklama sistemi hazırlanıyor...</strong></p>
-            <p>📍 <strong>Konum kontrol ediliyor</strong></p>
-            <p>📷 <strong>Kamera hazırlanıyor</strong></p>
-            <p style="color: #dc3545; margin-top: 15px;" id="loadingMessage">⚠️ Lütfen tarayıcınızdan <strong>"İzin Ver"</strong> butonuna tıklayın!</p>
+            <p><strong>Sistem hazırlanıyor...</strong></p>
+            <p style="color: #dc3545; font-size: 16px; font-weight: 600;" id="loadingMessage">⏳ Lütfen bekleyin...</p>
         </div>
     </div>
 
@@ -346,24 +417,44 @@
             <p>Bu uygulama kapsamında toplanan tüm verileriniz (ad, soyad, öğrenci numarası, konum bilgisi ve fotoğraf) 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında işlenmektedir. Verileriniz yalnızca devam kontrolü amacıyla kullanılacak, üçüncü kişilerle paylaşılmayacak ve güvenli bir şekilde saklanacaktır.</p>
         </div>
 
+        <!-- KONUM İZNİ İSTEME KUTUSU -->
+        <div class="permission-request-box" id="permissionRequestBox">
+            <h3>📍 KONUM İZNİ GEREKLİ!</h3>
+            <p><strong>Yoklama yapabilmek için konumunuza erişmemiz gerekiyor.</strong></p>
+            <p>Aşağıdaki butona tıkladığınızda tarayıcınız konum izni isteyecek. Lütfen <strong>"İZİN VER"</strong> seçeneğine tıklayın.</p>
+            <button class="permission-request-btn" onclick="konumIzniIste()">
+                🎯 KONUM İZNİ VER
+            </button>
+            <div class="manual-permission-box" id="manualPermissionBox">
+                <h4>⚠️ İzin penceresi açılmadı mı?</h4>
+                <ol>
+                    <li><strong>Opera:</strong> Adres çubuğunun sol tarafındaki kilit simgesine tıklayın</li>
+                    <li>"Site izinleri" veya "Permissions" seçeneğine tıklayın</li>
+                    <li>"Konum" veya "Location" seçeneğini <strong>"İzin Ver"</strong> yapın</li>
+                    <li>Sayfayı yenileyin (F5)</li>
+                </ol>
+            </div>
+        </div>
+
         <div class="gps-warning" id="gpsWarning">
             <h3>📍 Konum Servisi Kapalı!</h3>
             <p><strong>Telefonunuzun konum/GPS ayarlarını açmanız gerekiyor!</strong></p>
             <p>Ayarlar → Konum → Açık</p>
-            <button class="permission-retry-btn" onclick="izinleriTekrarIste()" style="margin-top: 15px;">🔄 Konum Açtım, Tekrar Dene</button>
+            <button class="permission-retry-btn" onclick="konumIzniIste()" style="margin-top: 15px;">🔄 Konum Açtım, Tekrar Dene</button>
         </div>
 
         <div class="permission-box" id="permissionBox">
             <h3>⚠️ Tarayıcı İzni Gerekli!</h3>
-            <p><strong>Tarayıcınızdan konum ve kamera izni vermeniz gerekiyor.</strong></p>
-            <p><strong>Nasıl izin vereceğim?</strong></p>
+            <p><strong>Konum izni reddedildi veya verilemedi.</strong></p>
+            <p><strong>Opera'da Konum İznini Manuel Açma:</strong></p>
             <ul>
-                <li>Tarayıcınızın üst kısmında "İzin Ver" mesajı çıkacak</li>
-                <li>Hem konum hem kamera için <strong>"İzin Ver"</strong> seçeneğine tıklayın</li>
-                <li>İzinleri reddettiyseniz, tarayıcı ayarlarından site izinlerini açın</li>
+                <li>Adres çubuğunun <strong>sol tarafındaki kilit 🔒 simgesine</strong> tıklayın</li>
+                <li>"<strong>Site izinleri</strong>" veya "<strong>Permissions</strong>" seçeneğine tıklayın</li>
+                <li>"<strong>Konum</strong>" veya "<strong>Location</strong>" yazısını bulun</li>
+                <li>Yanındaki açılır menüden "<strong>İzin Ver</strong>" veya "<strong>Allow</strong>" seçin</li>
+                <li>Sayfayı yenileyin (F5)</li>
             </ul>
-            <p><strong>Chrome/Safari:</strong> Adres çubuğunun yanındaki kilit simgesine tıklayın → İzinler → Konum ve Kamera → İzin Ver</p>
-            <button class="permission-retry-btn" onclick="izinleriTekrarIste()">🔄 İzinleri Tekrar İste</button>
+            <button class="permission-retry-btn" onclick="konumIzniIste()">🔄 Tekrar Dene</button>
         </div>
 
         <div class="form-group">
@@ -405,7 +496,8 @@
         let fotoCekildi = false;
         let konumAlindi = false;
         let kullaniciKonum = null;
-        let gercekMesafe = 0; // Admin için konsola yazılacak
+        let gercekMesafe = 0;
+        let izinDenemeYapildi = false;
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -415,13 +507,15 @@
         const submitBtn = document.getElementById('submitBtn');
         const statusBox = document.getElementById('statusBox');
         const permissionBox = document.getElementById('permissionBox');
+        const permissionRequestBox = document.getElementById('permissionRequestBox');
+        const manualPermissionBox = document.getElementById('manualPermissionBox');
         const gpsWarning = document.getElementById('gpsWarning');
         const locationInfo = document.getElementById('locationInfo');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const mainContainer = document.getElementById('mainContainer');
         const loadingMessage = document.getElementById('loadingMessage');
 
-        // Mesafe hesaplama fonksiyonu (Haversine formülü)
+        // Mesafe hesaplama fonksiyonu
         function mesafeHesapla(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
             const φ1 = lat1 * Math.PI / 180;
@@ -455,7 +549,7 @@
                     return;
                 }
 
-                loadingMessage.textContent = '📍 Konumunuz alınıyor... Lütfen bekleyin.';
+                console.log('📍 Konum izni isteniyor...');
 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -469,13 +563,11 @@
                             kullaniciKonum.lat, kullaniciKonum.lng
                         );
 
-                        gercekMesafe = Math.round(mesafe); // Admin için sakla
+                        gercekMesafe = Math.round(mesafe);
 
-                        // Öğrenciye koordinat gösterme - sadece durum bilgisi
                         locationInfo.innerHTML = `📍 Konum durumu: Kontrol edildi`;
                         locationInfo.style.display = 'block';
 
-                        // Admin için konsola yaz
                         console.log('🔍 KONUM DETAYI (Yönetici Bilgisi):');
                         console.log('📍 Koordinatlar:', kullaniciKonum.lat.toFixed(6), kullaniciKonum.lng.toFixed(6));
                         console.log('📏 Okula Uzaklık:', gercekMesafe, 'metre');
@@ -483,9 +575,7 @@
 
                         if (mesafe <= MAX_MESAFE) {
                             konumAlindi = true;
-                            resolve({
-                                success: true
-                            });
+                            resolve({ success: true });
                         } else {
                             reject({
                                 code: 'TOO_FAR',
@@ -494,18 +584,16 @@
                         }
                     },
                     (error) => {
-                        let errorInfo = {
-                            code: error.code,
-                            message: ''
-                        };
+                        console.error('Konum hatası:', error);
+                        let errorInfo = { code: error.code, message: '' };
 
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                errorInfo.message = 'Tarayıcı konum izni reddedildi';
+                                errorInfo.message = 'Konum izni reddedildi';
                                 errorInfo.code = 'PERMISSION_DENIED';
                                 break;
                             case error.POSITION_UNAVAILABLE:
-                                errorInfo.message = 'GPS/Konum servisi kapalı veya kullanılamıyor';
+                                errorInfo.message = 'GPS/Konum servisi kapalı';
                                 errorInfo.code = 'GPS_DISABLED';
                                 break;
                             case error.TIMEOUT:
@@ -520,47 +608,49 @@
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 15000,
+                        timeout: 20000,
                         maximumAge: 0
                     }
                 );
             });
         }
 
-        // Tüm izinleri al
-        async function tumIzinleriAl() {
+        // Konum izni iste - KULLANICI TIKLAYINCA
+        async function konumIzniIste() {
+            console.log('🎯 Kullanıcı konum izni butonuna tıkladı');
+            
+            permissionRequestBox.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
+            loadingMessage.textContent = '📍 Konum izni isteniyor... Lütfen tarayıcıdan "İZİN VER" seçeneğine tıklayın!';
+            
             try {
-                loadingMessage.textContent = '📍 Konum bilgisi isteniyor...';
-                
-                // Konum iznini al
-                const konumSonuc = await konumAl();
-                
-                loadingMessage.textContent = '✅ Konum doğrulandı!';
+                const sonuc = await konumAl();
                 
                 // Başarılı
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                    mainContainer.style.opacity = '1';
-                    mainContainer.style.pointerEvents = 'auto';
-                    durumGoster(`✅ Sistem Hazır!\n\nKonum: Kampüs içi ✓\n\nArtık formu doldurabilir ve fotoğraf çekebilirsiniz.`, 'success');
-                }, 1000);
+                loadingOverlay.style.display = 'none';
+                mainContainer.style.opacity = '1';
+                mainContainer.style.pointerEvents = 'auto';
+                durumGoster(`✅ Sistem Hazır!\n\nKonum: Kampüs içi ✓\n\nArtık formu doldurabilir ve fotoğraf çekebilirsiniz.`, 'success');
                 
             } catch (error) {
-                console.error('İzin hatası:', error);
+                console.error('❌ Konum izni hatası:', error);
                 loadingOverlay.style.display = 'none';
                 mainContainer.style.opacity = '1';
                 mainContainer.style.pointerEvents = 'auto';
                 
-                // Hata tipine göre farklı mesajlar
                 if (error.code === 'GPS_DISABLED' || error.code === 'POSITION_UNAVAILABLE') {
                     gpsWarning.style.display = 'block';
-                    durumGoster('❌ Telefonunuzun GPS/Konum servisi kapalı! Lütfen konum ayarlarınızı açın.', 'error');
+                    durumGoster('❌ GPS/Konum servisi kapalı! Lütfen telefonunuzun konum ayarlarını açın.', 'error');
                 } else if (error.code === 'PERMISSION_DENIED') {
                     permissionBox.style.display = 'block';
-                    durumGoster('❌ Tarayıcı konum izni reddedildi! Lütfen tarayıcı ayarlarından konum iznini verin.', 'error');
+                    durumGoster('❌ Konum izni reddedildi! Lütfen tarayıcı ayarlarından konum iznini verin.', 'error');
+                    
+                    // 3 saniye sonra manuel talimat göster
+                    setTimeout(() => {
+                        manualPermissionBox.style.display = 'block';
+                    }, 3000);
                 } else if (error.code === 'TOO_FAR') {
                     durumGoster(`❌ ${error.message}\n\nYoklamayı kampüs içerisinden yapmanız gerekmektedir.`, 'error');
-                    // Admin için konsola mesafe yaz
                     console.log('❌ KONUM REDDEDİLDİ:', gercekMesafe, 'metre (Limit:', MAX_MESAFE, 'metre)');
                 } else {
                     permissionBox.style.display = 'block';
@@ -569,33 +659,32 @@
             }
         }
 
-        // İzinleri tekrar iste
-        function izinleriTekrarIste() {
-            permissionBox.style.display = 'none';
-            gpsWarning.style.display = 'none';
-            locationInfo.style.display = 'none';
-            loadingOverlay.style.display = 'flex';
-            mainContainer.style.opacity = '0.3';
-            mainContainer.style.pointerEvents = 'none';
+        // Sayfa yüklenince
+        window.addEventListener('load', () => {
+            console.log('📱 Uygulama yüklendi - Konum izni için kullanıcı etkileşimi bekleniyor');
             
+            // 2 saniye bekle sonra yükleme ekranını kapat ve izin kutusu göster
             setTimeout(() => {
-                tumIzinleriAl();
-            }, 500);
-        }
+                loadingOverlay.style.display = 'none';
+                mainContainer.style.opacity = '1';
+                mainContainer.style.pointerEvents = 'auto';
+                permissionRequestBox.style.display = 'block';
+                
+                durumGoster('⚠️ Yoklama yapabilmek için konum izni vermeniz gerekmektedir.', 'warning');
+            }, 2000);
+        });
 
-        // Kamera başlat - Arka kamera zorunlu
+        // Kamera başlat
         startCameraBtn.addEventListener('click', async () => {
             try {
                 if (!konumAlindi) {
                     durumGoster('❌ Önce konum doğrulaması yapılmalı!', 'error');
+                    permissionRequestBox.style.display = 'block';
                     return;
                 }
 
-                // Sadece arka kamera - seçim yok
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: { exact: 'environment' } // Arka kamera ZORUNLU
-                    } 
+                    video: { facingMode: { exact: 'environment' } } 
                 });
 
                 video.srcObject = stream;
@@ -606,14 +695,9 @@
                 durumGoster('📸 Tahtanın fotoğrafını çekin', 'info');
 
             } catch (error) {
-                console.error('Kamera hatası:', error);
-                
-                // Arka kamera yoksa normal kamerayı aç
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            facingMode: 'environment' // Arka kamera tercihi (zorunlu değil)
-                        } 
+                        video: { facingMode: 'environment' } 
                     });
 
                     video.srcObject = stream;
@@ -625,7 +709,6 @@
                     
                 } catch (error2) {
                     durumGoster('❌ Kamera açılamadı! Lütfen kamera izni verin.', 'error');
-                    permissionBox.style.display = 'block';
                 }
             }
         });
@@ -664,7 +747,8 @@
             }
 
             if (!konumAlindi) {
-                durumGoster('❌ Lütfen önce konumunuzu doğrulayın!', 'error');
+                durumGoster('❌ Lütfen önce konum izni verin!', 'error');
+                permissionRequestBox.style.display = 'block';
                 return;
             }
 
@@ -675,7 +759,6 @@
 
             durumGoster(`🎉 YOKLAMA BAŞARILI!\n\n👤 ${ad} ${soyad}\n🎓 No: ${ogrenciNo}\n📍 Konum: Kampüs içi ✓\n📸 Fotoğraf: Kaydedildi ✓\n\n✅ Katılımınız başarıyla kaydedildi!`, 'success');
 
-            // Admin için detaylı konsol çıktısı
             console.log('═══════════════════════════════════════');
             console.log('🎓 YOKLAMA BİLGİLERİ (YÖNETİCİ PANELİ)');
             console.log('═══════════════════════════════════════');
@@ -697,13 +780,6 @@
                 fotoCekildi = false;
                 locationInfo.style.display = 'none';
             }, 3000);
-        });
-
-        // Sayfa yüklendiğinde otomatik izin iste
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                tumIzinleriAl();
-            }, 1000);
         });
     </script>
 </body>
