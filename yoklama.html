@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-         
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -157,24 +157,68 @@
             border: 2px solid #bee5eb;
         }
         
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+        
         .permission-box {
             background: #fff3cd;
             border: 2px solid #ffc107;
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
             display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
         
         .permission-box h3 {
             color: #856404;
-            font-size: 16px;
+            font-size: 18px;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .permission-box p {
             color: #856404;
             font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .permission-box ul {
+            color: #856404;
+            font-size: 14px;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .permission-box ul li {
+            margin-bottom: 8px;
+        }
+        
+        .permission-retry-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ffc107;
+            color: #856404;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        
+        .permission-retry-btn:hover {
+            background: #ffb300;
         }
         
         .kvkk-box {
@@ -206,10 +250,76 @@
             color: #666;
             display: none;
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .loading-content p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Yükleme Ekranı -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <h2>🔐 İzinler Kontrol Ediliyor</h2>
+            <div class="spinner"></div>
+            <p><strong>Yoklama sistemi için gerekli izinler isteniyor...</strong></p>
+            <p>📍 <strong>Konum İzni:</strong> Okul içinde olduğunuzu doğrulamak için</p>
+            <p>📷 <strong>Kamera İzni:</strong> Tahta fotoğrafı çekmek için</p>
+            <p style="color: #dc3545; margin-top: 15px;">⚠️ Lütfen tarayıcınızdan <strong>"İzin Ver"</strong> butonuna tıklayın!</p>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="opacity: 0.3; pointer-events: none;">
         <div class="header">
             <h1>📚 Üniversite Yoklama Sistemi</h1>
             <p>Derse katılımınızı kaydetmek için formu doldurun</p>
@@ -217,12 +327,24 @@
 
         <div class="kvkk-box">
             <h3>🔒 Kişisel Verilerin Korunması (KVKK)</h3>
-            <p>Bu uygulama kapsamında toplanan tüm verileriniz (ad, soyad, öğrenci numarası, konum bilgisi ve fotoğraf) 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında işlenmektedir. Verileriniz yalnızca devam kontrolü amacıyla kullanılacak, üçüncü kişilerle paylaşılmayacak ve güvenli bir şekilde saklanacaktır. Haklarınız hakkında bilgi için üniversite KVKK birimine başvurabilirsiniz.</p>
+            <p>Bu uygulama kapsamında toplanan tüm verileriniz (ad, soyad, öğrenci numarası, konum bilgisi ve fotoğraf) 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında işlenmektedir. Verileriniz yalnızca devam kontrolü amacıyla kullanılacak, üçüncü kişilerle paylaşılmayacak ve güvenli bir şekilde saklanacaktır.</p>
         </div>
 
         <div class="permission-box" id="permissionBox">
-            <h3>⚠️ İzin Gerekli</h3>
-            <p>Yoklama kaydı için konum ve kamera erişimine izin vermeniz gerekmektedir. Lütfen tarayıcınızdan izin verin.</p>
+            <h3>⚠️ İzin Gerekli!</h3>
+            <p><strong>Yoklama sistemi çalışmıyor çünkü gerekli izinler verilmedi.</strong></p>
+            <p>Aşağıdaki izinlere ihtiyacımız var:</p>
+            <ul>
+                <li><strong>📍 Konum:</strong> Okul içinde olduğunuzu doğrulamak için</li>
+                <li><strong>📷 Kamera:</strong> Tahta fotoğrafı çekmek için</li>
+            </ul>
+            <p><strong>Nasıl izin vereceğim?</strong></p>
+            <ul>
+                <li>Tarayıcınızın üst kısmında "İzin Ver" mesajı çıkacak</li>
+                <li>Hem konum hem kamera için "İzin Ver" seçeneğine tıklayın</li>
+                <li>İzinleri reddettiyseniz, tarayıcı ayarlarından site izinlerini açın</li>
+            </ul>
+            <button class="permission-retry-btn" onclick="izinleriTekrarIste()">🔄 İzinleri Tekrar İste</button>
         </div>
 
         <div class="form-group">
@@ -263,6 +385,7 @@
         let stream = null;
         let fotoCekildi = false;
         let konumAlindi = false;
+        let kameraAcildi = false;
         let kullaniciKonum = null;
 
         const video = document.getElementById('video');
@@ -274,6 +397,8 @@
         const statusBox = document.getElementById('statusBox');
         const permissionBox = document.getElementById('permissionBox');
         const locationInfo = document.getElementById('locationInfo');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const mainContainer = document.getElementById('mainContainer');
 
         // Mesafe hesaplama fonksiyonu (Haversine formülü)
         function mesafeHesapla(lat1, lon1, lat2, lon2) {
@@ -306,8 +431,6 @@
                     return;
                 }
 
-                durumGoster('📍 Konumunuz alınıyor...', 'info');
-
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         kullaniciKonum = {
@@ -339,8 +462,7 @@
                         let hata = 'Konum alınamadı!';
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                hata = '❌ Konum izni reddedildi! Lütfen tarayıcı ayarlarından konum iznini açın.';
-                                permissionBox.style.display = 'block';
+                                hata = '❌ Konum izni reddedildi!';
                                 break;
                             case error.POSITION_UNAVAILABLE:
                                 hata = '❌ Konum bilgisi kullanılamıyor!';
@@ -349,7 +471,6 @@
                                 hata = '❌ Konum alma zaman aşımına uğradı!';
                                 break;
                         }
-                        durumGoster(hata, 'error');
                         reject(hata);
                     },
                     {
@@ -361,18 +482,76 @@
             });
         }
 
+        // Kamera izni al
+        async function kameraIzniAl() {
+            try {
+                const tempStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                });
+                
+                // İzin alındı, stream'i kapat
+                tempStream.getTracks().forEach(track => track.stop());
+                kameraAcildi = true;
+                return true;
+            } catch (error) {
+                console.error('Kamera izni hatası:', error);
+                throw new Error('Kamera izni reddedildi');
+            }
+        }
+
+        // Tüm izinleri al
+        async function tumIzinleriAl() {
+            try {
+                // Önce kamera iznini al
+                await kameraIzniAl();
+                
+                // Sonra konum iznini al
+                await konumAl();
+                
+                // Her şey başarılı
+                loadingOverlay.style.display = 'none';
+                mainContainer.style.opacity = '1';
+                mainContainer.style.pointerEvents = 'auto';
+                durumGoster('✅ Tüm izinler verildi! Artık yoklama yapabilirsiniz.', 'success');
+                
+            } catch (error) {
+                console.error('İzin hatası:', error);
+                loadingOverlay.style.display = 'none';
+                mainContainer.style.opacity = '1';
+                mainContainer.style.pointerEvents = 'auto';
+                permissionBox.style.display = 'block';
+                durumGoster('❌ Gerekli izinler verilmedi! Lütfen konum ve kamera izinlerini verin.', 'error');
+            }
+        }
+
+        // İzinleri tekrar iste
+        function izinleriTekrarIste() {
+            permissionBox.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
+            mainContainer.style.opacity = '0.3';
+            mainContainer.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                tumIzinleriAl();
+            }, 500);
+        }
+
         // Kamera başlat
         startCameraBtn.addEventListener('click', async () => {
             try {
-                // Önce konumu kontrol et
                 if (!konumAlindi) {
+                    durumGoster('❌ Önce konum doğrulaması yapılmalı!', 'error');
                     await konumAl();
+                    return;
                 }
 
-                // Kamera iznini iste
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
-                        facingMode: 'environment', // Arka kamera
+                        facingMode: 'environment',
                         width: { ideal: 1920 },
                         height: { ideal: 1080 }
                     } 
@@ -383,12 +562,11 @@
                 captureBtn.style.display = 'block';
                 startCameraBtn.style.display = 'none';
                 preview.style.display = 'none';
-                permissionBox.style.display = 'none';
                 durumGoster('📸 Tahtanın fotoğrafını çekin', 'info');
 
             } catch (error) {
                 console.error('Kamera hatası:', error);
-                durumGoster('❌ Kamera erişimi reddedildi! Lütfen tarayıcı ayarlarından kamera iznini açın.', 'error');
+                durumGoster('❌ Kamera açılamadı! Lütfen izinleri kontrol edin.', 'error');
                 permissionBox.style.display = 'block';
             }
         });
@@ -407,7 +585,6 @@
             startCameraBtn.textContent = '🔄 Yeniden Fotoğraf Çek';
             startCameraBtn.style.display = 'block';
             
-            // Kamerayı kapat
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
@@ -422,7 +599,6 @@
             const soyad = document.getElementById('soyad').value.trim();
             const ogrenciNo = document.getElementById('ogrenciNo').value.trim();
 
-            // Kontroller
             if (!ad || !soyad || !ogrenciNo) {
                 durumGoster('❌ Lütfen tüm alanları doldurun!', 'error');
                 return;
@@ -430,7 +606,6 @@
 
             if (!konumAlindi) {
                 durumGoster('❌ Lütfen önce konumunuzu doğrulayın!', 'error');
-                await konumAl().catch(() => {});
                 return;
             }
 
@@ -439,10 +614,8 @@
                 return;
             }
 
-            // Başarılı yoklama
             durumGoster(`🎉 YOKLAMA BAŞARILI!\n\n👤 ${ad} ${soyad}\n🎓 No: ${ogrenciNo}\n📍 Konum: Onaylandı\n📸 Fotoğraf: Kaydedildi\n\n✅ Katılımınız kaydedildi!`, 'success');
 
-            // Konsola bilgileri yazdır (gerçek uygulamada sunucuya gönderilir)
             console.log('YOKLAMA BİLGİLERİ:', {
                 ad: ad,
                 soyad: soyad,
@@ -452,7 +625,6 @@
                 zaman: new Date().toLocaleString('tr-TR')
             });
 
-            // Formu temizle
             setTimeout(() => {
                 document.getElementById('ad').value = '';
                 document.getElementById('soyad').value = '';
@@ -464,17 +636,12 @@
             }, 3000);
         });
 
-        // Sayfa yüklendiğinde konum iste
+        // Sayfa yüklendiğinde otomatik izin iste
         window.addEventListener('load', () => {
-            durumGoster('🚀 Hoş geldiniz! Lütfen konum ve kamera izinlerini verin.', 'info');
-            // Otomatik konum kontrolü
             setTimeout(() => {
-                konumAl().catch(() => {
-                    permissionBox.style.display = 'block';
-                });
+                tumIzinleriAl();
             }, 1000);
         });
     </script>
 </body>
-
 </html>
