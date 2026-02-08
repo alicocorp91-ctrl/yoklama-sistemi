@@ -399,12 +399,13 @@
         // OKUL KOORDİNATLARI
         const OKUL_LAT = 37.17332229757835;
         const OKUL_LNG = 33.25556434722105;
-        const MAX_MESAFE = 100; // metre
+        const MAX_MESAFE = 2000; // metre (2 km)
 
         let stream = null;
         let fotoCekildi = false;
         let konumAlindi = false;
         let kullaniciKonum = null;
+        let gercekMesafe = 0; // Admin için konsola yazılacak
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -443,7 +444,7 @@
             statusBox.style.display = 'block';
         }
 
-        // Konum al - Sadece konum izni kontrolü
+        // Konum al
         function konumAl() {
             return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
@@ -468,23 +469,27 @@
                             kullaniciKonum.lat, kullaniciKonum.lng
                         );
 
-                        locationInfo.innerHTML = `
-                            📍 Konumunuz: ${kullaniciKonum.lat.toFixed(6)}, ${kullaniciKonum.lng.toFixed(6)}<br>
-                            📏 Okula uzaklık: ${Math.round(mesafe)} metre
-                        `;
+                        gercekMesafe = Math.round(mesafe); // Admin için sakla
+
+                        // Öğrenciye koordinat gösterme - sadece durum bilgisi
+                        locationInfo.innerHTML = `📍 Konum durumu: Kontrol edildi`;
                         locationInfo.style.display = 'block';
+
+                        // Admin için konsola yaz
+                        console.log('🔍 KONUM DETAYI (Yönetici Bilgisi):');
+                        console.log('📍 Koordinatlar:', kullaniciKonum.lat.toFixed(6), kullaniciKonum.lng.toFixed(6));
+                        console.log('📏 Okula Uzaklık:', gercekMesafe, 'metre');
+                        console.log('✅ Limit:', MAX_MESAFE, 'metre');
 
                         if (mesafe <= MAX_MESAFE) {
                             konumAlindi = true;
                             resolve({
-                                success: true,
-                                mesafe: Math.round(mesafe)
+                                success: true
                             });
                         } else {
                             reject({
                                 code: 'TOO_FAR',
-                                message: `Konumunuz okula çok uzak! (${Math.round(mesafe)} metre). En fazla ${MAX_MESAFE} metre uzakta olmalısınız.`,
-                                mesafe: Math.round(mesafe)
+                                message: 'Okul kampüsü sınırları dışındasınız. Yoklama yalnızca kampüs içerisinden yapılabilir.'
                             });
                         }
                     },
@@ -530,14 +535,14 @@
                 // Konum iznini al
                 const konumSonuc = await konumAl();
                 
-                loadingMessage.textContent = '✅ Konum doğrulandı! (' + konumSonuc.mesafe + ' metre)';
+                loadingMessage.textContent = '✅ Konum doğrulandı!';
                 
                 // Başarılı
                 setTimeout(() => {
                     loadingOverlay.style.display = 'none';
                     mainContainer.style.opacity = '1';
                     mainContainer.style.pointerEvents = 'auto';
-                    durumGoster(`✅ Sistem Hazır!\n\nKonum: Doğrulandı (${konumSonuc.mesafe} metre)\n\nArtık formu doldurabilir ve fotoğraf çekebilirsiniz.`, 'success');
+                    durumGoster(`✅ Sistem Hazır!\n\nKonum: Kampüs içi ✓\n\nArtık formu doldurabilir ve fotoğraf çekebilirsiniz.`, 'success');
                 }, 1000);
                 
             } catch (error) {
@@ -554,7 +559,9 @@
                     permissionBox.style.display = 'block';
                     durumGoster('❌ Tarayıcı konum izni reddedildi! Lütfen tarayıcı ayarlarından konum iznini verin.', 'error');
                 } else if (error.code === 'TOO_FAR') {
-                    durumGoster(`❌ ${error.message}`, 'error');
+                    durumGoster(`❌ ${error.message}\n\nYoklamayı kampüs içerisinden yapmanız gerekmektedir.`, 'error');
+                    // Admin için konsola mesafe yaz
+                    console.log('❌ KONUM REDDEDİLDİ:', gercekMesafe, 'metre (Limit:', MAX_MESAFE, 'metre)');
                 } else {
                     permissionBox.style.display = 'block';
                     durumGoster('❌ ' + error.message, 'error');
@@ -666,16 +673,20 @@
                 return;
             }
 
-            durumGoster(`🎉 YOKLAMA BAŞARILI!\n\n👤 ${ad} ${soyad}\n🎓 No: ${ogrenciNo}\n📍 Konum: Onaylandı\n📸 Fotoğraf: Kaydedildi\n\n✅ Katılımınız kaydedildi!`, 'success');
+            durumGoster(`🎉 YOKLAMA BAŞARILI!\n\n👤 ${ad} ${soyad}\n🎓 No: ${ogrenciNo}\n📍 Konum: Kampüs içi ✓\n📸 Fotoğraf: Kaydedildi ✓\n\n✅ Katılımınız başarıyla kaydedildi!`, 'success');
 
-            console.log('YOKLAMA BİLGİLERİ:', {
-                ad: ad,
-                soyad: soyad,
-                ogrenciNo: ogrenciNo,
-                konum: kullaniciKonum,
-                foto: preview.src.substring(0, 50) + '...',
-                zaman: new Date().toLocaleString('tr-TR')
-            });
+            // Admin için detaylı konsol çıktısı
+            console.log('═══════════════════════════════════════');
+            console.log('🎓 YOKLAMA BİLGİLERİ (YÖNETİCİ PANELİ)');
+            console.log('═══════════════════════════════════════');
+            console.log('👤 Ad Soyad:', ad, soyad);
+            console.log('🎓 Öğrenci No:', ogrenciNo);
+            console.log('📍 Koordinatlar:', kullaniciKonum.lat.toFixed(6), ',', kullaniciKonum.lng.toFixed(6));
+            console.log('📏 Okula Uzaklık:', gercekMesafe, 'metre');
+            console.log('📸 Fotoğraf:', preview.src.substring(0, 50) + '...');
+            console.log('🕐 Tarih/Saat:', new Date().toLocaleString('tr-TR'));
+            console.log('✅ Durum: BAŞARILI');
+            console.log('═══════════════════════════════════════');
 
             setTimeout(() => {
                 document.getElementById('ad').value = '';
